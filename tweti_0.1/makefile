@@ -2,9 +2,10 @@
 #g++ tweti.cpp `pkg-config --cflags gtk+-2.0` -I/usr/include/libappindicator-0.1/  -o example `pkg-config --libs gtk+-2.0` -L/usr/lib -lappindicator
 
 CC=g++
-CFLAGS=-Wall -c
+#DEBUG ON
+CFLAGS=-g -Wall -c
 SETTINGS_LIBS=`pkg-config --libs libconfig`
-DEPS= `pkg-config --cflags gtk+-2.0` -I/usr/include/libappindicator-0.1/ `pkg-config --libs gtk+-2.0` -L/usr/lib -lappindicator
+DEPS= `pkg-config --cflags gtk+-2.0` -I/usr/include/libappindicator-0.1/ `pkg-config --libs gtk+-2.0 libnotify` -L/usr/lib -lappindicator
 
 all: twiti
 

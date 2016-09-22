@@ -2,6 +2,10 @@
 #include <libappindicator/app-indicator.h>
 #include <stdlib.h>
 #include <cstdlib>
+#include <cstring>
+#include<iostream>
+#include <libnotify/notify.h>
+using namespace std;
 
 static void activate_action (GtkAction *action);
 
@@ -33,19 +37,28 @@ static const gchar *ui_info =
 
 void update_statusbar(GtkTextBuffer *buffer, GtkStatusbar  *statusbar) {
   gchar *msg;
-  gint row, col;
-  GtkTextIter iter; 
   gtk_statusbar_pop(statusbar, 0); 
-  gtk_text_buffer_get_iter_at_mark(buffer, &iter, gtk_text_buffer_get_insert(buffer));
-  row = gtk_text_iter_get_line(&iter);
-  col = gtk_text_iter_get_line_offset(&iter);
-  msg = g_strdup_printf("Col: %d Ln: %d", col+1, row+1);
+  msg = g_strdup_printf("Size: %ld", sizeof(buffer)/sizeof(char));
   gtk_statusbar_push(statusbar, 0, msg);
   g_free(msg);
 }
 
 void mark_set_callback(GtkTextBuffer *buffer, const GtkTextIter *new_location, GtkTextMark *mark, gpointer data) {
   update_statusbar(buffer, GTK_STATUSBAR(data));
+}
+
+void postTweet(GtkTextBuffer* buffer){
+  GtkTextIter start_iter, end_iter;
+  char *text;
+  gtk_text_buffer_get_start_iter(buffer, &start_iter);
+  gtk_text_buffer_get_end_iter(buffer, &end_iter);
+  text = (gchar *) gtk_text_buffer_get_text(buffer, &start_iter, &end_iter, FALSE);
+  notify_init("Sample");
+  NotifyNotification* n = notify_notification_new ("text","ji", 0);
+  notify_notification_set_timeout(n, 10000); // 10 seconds
+  if (!notify_notification_show(n, 0)) {
+        std::cerr << "show has failed" << std::endl;
+    }
 }
 
 static void activate_action(GtkAction *action){
@@ -57,9 +70,8 @@ static void activate_action(GtkAction *action){
     GtkWidget *text_view;
     GtkWidget *vbox;
     GtkWidget *toolbar;
-    GtkWidget *view;
     GtkWidget *statusbar;
-    GtkToolItem *term;
+    GtkToolItem *tweet;
     GtkTextBuffer *buffer;
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title (GTK_WINDOW (window), "Tweet away, my boy/girl:");
@@ -67,10 +79,13 @@ static void activate_action(GtkAction *action){
     gtk_window_set_default_size(GTK_WINDOW(window), 350, 300);
     vbox = gtk_vbox_new(FALSE, 0);  //vbox def
     gtk_container_add(GTK_CONTAINER(window), vbox);
+    /**
+     ** TODO FIX statusbar
+     **/
     toolbar = gtk_toolbar_new();  //toolbar def
     gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
-    term = gtk_tool_button_new_from_stock(GTK_STOCK_QUIT);
-    gtk_toolbar_insert(GTK_TOOLBAR(toolbar), term, -1);
+    tweet = gtk_tool_button_new_from_stock(GTK_STOCK_OK);
+    gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tweet, -1);
     gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 5);
     text_view = gtk_text_view_new(); //text_view def
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text_view), GTK_WRAP_WORD);
@@ -79,11 +94,10 @@ static void activate_action(GtkAction *action){
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
     statusbar = gtk_statusbar_new();
     gtk_box_pack_start(GTK_BOX(vbox), statusbar, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(term), "clicked", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect(G_OBJECT(tweet), "clicked", G_CALLBACK(postTweet), buffer);
     g_signal_connect(buffer, "changed", G_CALLBACK(update_statusbar), statusbar);
-    g_signal_connect_object(buffer, "mark_set", G_CALLBACK(mark_set_callback), statusbar, G_CONNECT_SWAPPED);
-
-    g_signal_connect_swapped(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect_object(buffer, "mark_set", G_CALLBACK(mark_set_callback), statusbar, G_CONNECT_AFTER);
+    // g_signal_connect_swapped(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
     gtk_widget_show_all (window);
     break;
   case '1':
@@ -96,7 +110,7 @@ static void activate_action(GtkAction *action){
   case '3':
     break;
   case '4':
-    exit(0);
+    exit(0); //(939) 292-7157
   }
 }
 
