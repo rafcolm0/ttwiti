@@ -52,9 +52,9 @@ void postTweet(GtkTextBuffer* buffer){
   char *text;
   gtk_text_buffer_get_start_iter(buffer, &start_iter);
   gtk_text_buffer_get_end_iter(buffer, &end_iter);
-  text = (gchar *) gtk_text_buffer_get_text(buffer, &start_iter, &end_iter, FALSE);
+  text = gtk_text_buffer_get_text(buffer, &start_iter, &end_iter, FALSE);
   notify_init("Sample");
-  NotifyNotification* n = notify_notification_new ("text","ji", 0);
+  NotifyNotification* n = notify_notification_new ("Tweet posted succesfully!", text, 0);
   notify_notification_set_timeout(n, 10000); // 10 seconds
   if (!notify_notification_show(n, 0)) {
         std::cerr << "show has failed" << std::endl;
@@ -94,7 +94,7 @@ static void activate_action(GtkAction *action){
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
     statusbar = gtk_statusbar_new();
     gtk_box_pack_start(GTK_BOX(vbox), statusbar, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(tweet), "clicked", G_CALLBACK(postTweet), buffer);
+    g_signal_connect_swapped(G_OBJECT(tweet), "clicked", G_CALLBACK(postTweet), buffer);
     g_signal_connect(buffer, "changed", G_CALLBACK(update_statusbar), statusbar);
     g_signal_connect_object(buffer, "mark_set", G_CALLBACK(mark_set_callback), statusbar, G_CONNECT_AFTER);
     // g_signal_connect_swapped(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
