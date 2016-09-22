@@ -70,8 +70,8 @@ void postTweet(GtkTextBuffer* buffer){
   NotifyNotification* n = notify_notification_new ("Tweet posted succesfully!", text, 0);
   notify_notification_set_timeout(n, 10000); // 10 seconds
   if (!notify_notification_show(n, 0)) {
-        std::cerr << "show has failed" << std::endl;
-    }
+    std::cerr << "show has failed" << std::endl;
+  }
 }
 
 static void activate_action(GtkAction *action){
@@ -133,7 +133,11 @@ int main(int argc, char **argv){
   GtkUIManager*   uim;
   AppIndicator* indicator;
   GError* error = NULL;
+  twitCurl twitterObj;
 
+  /* Set twitter username and password */
+  twitterObj.setTwitterUsername( "" );
+  twitterObj.setTwitterPassword( "passWord" );
   gtk_init(&argc, &argv);
 
   /* Menus */
