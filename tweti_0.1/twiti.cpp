@@ -5,8 +5,21 @@
 #include <cstring>
 #include<iostream>
 #include <libnotify/notify.h>
+#include "libtwitcurl/twitcurl.h"
 using namespace std;
 
+/** author and twitter keys owner: rafcolm_
+ ** twitter owner ID	1903897902
+ ** consumer key:	L1BkxDo0Uqd6x4B6NS2MTfen8
+ ** 
+ ** description: Mini twitter client for quicker tweeting and notification access. Features no GUI. Only tweeting.
+ ** 
+ ** github: https://github.com/rafcolm0/ttwiti
+ ** email: rafael.colon5@gmail.com
+ ** linkedin: https://www.linkedin.com/in/rafaeljcolon
+ ** Credit to external libraries used:
+ **   -twitcurl: https://github.com/swatkat/twitcurl 
+ **/
 static void activate_action (GtkAction *action);
 
 static GtkActionEntry entries[] = {
