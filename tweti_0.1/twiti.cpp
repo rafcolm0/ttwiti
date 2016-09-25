@@ -3,10 +3,18 @@
 #include <stdlib.h>
 #include <cstdlib>
 #include <cstring>
-#include<iostream>
+#include <iostream>
 #include <libnotify/notify.h>
-#include "libtwitcurl/twitcurl.h"
+#include <fstream>
+
 using namespace std;
+
+GtkWidget* indicator_menu;
+GtkActionGroup* action_group;
+GtkUIManager*   uim;
+AppIndicator* indicator;
+GError* error = NULL;
+ofstream prefs;
 
 /** author and twitter keys owner: rafcolm_
  ** twitter owner ID	1903897902
@@ -17,8 +25,8 @@ using namespace std;
  ** github: https://github.com/rafcolm0/ttwiti
  ** email: rafael.colon5@gmail.com
  ** linkedin: https://www.linkedin.com/in/rafaeljcolon
- ** Credit to external libraries used:
- **   -twitcurl: https://github.com/swatkat/twitcurl 
+ ** External libraries used:
+ **   -twitcurl (twitter API): https://github.com/swatkat/twitcurl 
  **/
 static void activate_action (GtkAction *action);
 
@@ -47,6 +55,10 @@ static const gchar *ui_info =
   "  </popup>"
   "</ui>";
 
+void terminate_prog(){
+  prefs.close();
+  exit(0);
+}
 
 void update_statusbar(GtkTextBuffer *buffer, GtkStatusbar  *statusbar) {
   gchar *msg;
@@ -123,23 +135,20 @@ static void activate_action(GtkAction *action){
   case '3':
     break;
   case '4':
-    exit(0); //(939) 292-7157
+    terminate_prog(); 
   }
 }
 
 int main(int argc, char **argv){
-  GtkWidget*      indicator_menu;
-  GtkActionGroup* action_group;
-  GtkUIManager*   uim;
-  AppIndicator* indicator;
-  GError* error = NULL;
-  twitCurl twitterObj;
-
-  /* Set twitter username and password */
-  twitterObj.setTwitterUsername( "" );
-  twitterObj.setTwitterPassword( "passWord" );
+  if(chdir("/home/rc/.config/ttwiti/") != 0){
+    system("mkdir /home/rc/.config/ttwiti/");
+    chdir("/home/rc/.config/ttwiti/");
+  }
+  prefs.open ("prefs", ios::out | ios::app | ios::in);
+  if(){
+    
+  }
   gtk_init(&argc, &argv);
-
   /* Menus */
   action_group = gtk_action_group_new("AppActions");
   gtk_action_group_add_actions(action_group, entries, n_entries, NULL);

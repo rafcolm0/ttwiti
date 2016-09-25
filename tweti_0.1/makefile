@@ -1,5 +1,4 @@
 # Makefile for tweeti.  Libs: libappindicator0.1, twitcurl-master
-#g++ tweti.cpp `pkg-config --cflags gtk+-2.0` -I/usr/include/libappindicator-0.1/  -o example `pkg-config --libs gtk+-2.0` -L/usr/lib -lappindicator
 
 CC=g++
 #DEBUG ON
@@ -9,14 +8,17 @@ DEPS= `pkg-config --cflags gtk+-2.0` -I/usr/include/libappindicator-0.1/ `pkg-co
 
 all: twiti
 
-twiti: twiti.o settings.o
-	$(CC) twiti.o settings.o -o twiti $(DEPS)
+twiti: twiti.o settings.o account.o
+	$(CC) twiti.o settings.o account.o -o twiti $(DEPS)
 
 twiti.o: twiti.cpp
 	$(CC) $(CFLAGS) twiti.cpp $(DEPS)
 
 settings.o: settings.cpp
 	$(CC) $(CFLAGS) settings.cpp
+
+account.o: account.cpp account.h
+	$(CC) $(CFLAGS) account.cpp account.h
 
 clean:
 	$(RM) twiti twiti.o settings.o
