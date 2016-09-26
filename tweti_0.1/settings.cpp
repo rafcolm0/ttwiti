@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include "libtwitcurl/twitcurl.h"
 
 using namespace std;
 
@@ -22,8 +23,8 @@ public:
     prefs.close();
   }
 
-  void addAccount(string pin){
-    cout << pin << endl;
+  void addAccount(const char* pin){
+    
   }
 
   int numberOfAccounts(){
