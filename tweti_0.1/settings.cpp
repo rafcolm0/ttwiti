@@ -2,6 +2,9 @@
 #include <fstream>
 #include <unistd.h>
 #include <cstdlib>
+#include <cstring>
+#include <iostream>
+
 using namespace std;
 
 class settings{
@@ -19,9 +22,18 @@ public:
     prefs.close();
   }
 
+  void addAccount(string pin){
+    cout << pin << endl;
+  }
+
   int numberOfAccounts(){
     return 0;
   }
+
+  void close(){
+    prefs.close();
+  }
+  
 private:
   ofstream prefs;
 };
