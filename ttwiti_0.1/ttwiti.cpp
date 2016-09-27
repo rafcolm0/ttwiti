@@ -17,9 +17,10 @@
 #include <cstring>
 #include <iostream>
 #include <libnotify/notify.h>
-#include "settings.cpp"
+#include "settings.h"
 #include "libtwitcurl/twitcurl.h"
-#include "strings.cpp"
+#include "strings.h"
+#include "twitter_man.h"
 
 using namespace std;
 
