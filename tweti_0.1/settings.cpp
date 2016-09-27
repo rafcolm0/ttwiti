@@ -15,26 +15,23 @@ public:
       system("mkdir /home/rc/.config/ttwiti/");
       chdir("/home/rc/.config/ttwiti/");
     }
-    prefs.open ("prefs", std::fstream::in | std::fstream::out | std::fstream::app);    
-  }
-
-  ~settings(){
+    ofstream prefs;
+    prefs.open("prefs");
     prefs.close();
   }
 
   void addAccount(string  username, string token_key, string token_secret){
+    ofstream prefs;
+    prefs.open("prefs", ios::out | ios::in | ios::app);
     prefs << "<" << username << "><" << token_key << "><" << token_secret << ">" << endl;
+    prefs.close();
   }
 
   bool noAccounts(){
-    return prefs.peek() == std::ifstream::traits_type::eof();
-  }
-
-  void close(){
+    ifstream prefs;
+    prefs.open("prefs");
+    int t = prefs.peek() == std::ifstream::traits_type::eof();
     prefs.close();
+    return t;
   }
-  
-private:
-  fstream prefs;
-  
 };

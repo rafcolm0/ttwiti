@@ -62,7 +62,6 @@ static const gchar *ui_info =
   "</ui>";
 
 void terminate_prog(){
-  preferences.close();
   exit(0);
 }
 
