@@ -10,13 +10,14 @@ using namespace std;
 class settings{
 public:
   settings(){
-    /*** TODO getlogin_r(char *buf, size_t bufsize) -> get usermane***/
-    if(chdir("/home/rc/.config/ttwiti/") != 0){
-      system("mkdir /home/rc/.config/ttwiti/");
-      chdir("/home/rc/.config/ttwiti/");
+    string home = getenv("HOME");
+    if(chdir((home + "/.config/ttwiti").c_str()) != 0){
+      cout << "HOME:  " << (home + "/.config/ttwiti").c_str() << endl << endl << endl;
+      system(("mkdir " + home + "/.config/ttwiti").c_str());
+      chdir((home + "/.config/ttwiti").c_str());
     }
     ofstream prefs;
-    prefs.open("prefs");
+    prefs.open("prefs", ios::out | ios::in | ios::app);
     prefs.close();
   }
 
