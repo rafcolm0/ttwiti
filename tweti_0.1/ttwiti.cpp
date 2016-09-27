@@ -19,6 +19,7 @@
 #include <libnotify/notify.h>
 #include "settings.cpp"
 #include "libtwitcurl/twitcurl.h"
+#include "strings.cpp"
 
 using namespace std;
 
@@ -36,17 +37,21 @@ std::string CONSUMER_SECRET("Q6UEjXmsWR8wwlYXxHiAOnoeUrustLtLogE4JscFkKvSjGNlkU"
 
 static void activate_action (GtkAction *action);
 
+void terminate_prog(){
+  exit(0);
+}
+
 static GtkActionEntry entries[] = {
-  {"0",  "post-tweet",     "_Tweet",  "<alt>T",
-   "Post a tweet",    G_CALLBACK(activate_action)},
-  {"1", "visit-pofile",    "_Profile", "<altl>P",
-   "Go to Profile",          G_CALLBACK(activate_action)},
-  {"2", "visit-timeline",    "_Timeline", "<alt>T",
-   "Go to Timeline",            G_CALLBACK(activate_action)},
-  {"3", "settings",    "_Settings", "<alt>S",
-   "Save file",            G_CALLBACK(activate_action)},
-  {"4", "application-exit", "_Exit", "<alt>Q",
-   "Exit the application", G_CALLBACK(gtk_main_quit)},
+  {"0",  "post-tweet",     ENTRY_POST_TWEET.c_str(),  "<alt>T",
+   ENTRY_POST_TWEET.c_str(),    G_CALLBACK(activate_action)},
+  {"1", "visit-pofile",    ENTRY_VISIT_PROFILE.c_str(), "<altl>P",
+   ENTRY_VISIT_PROFILE.c_str(),          G_CALLBACK(activate_action)},
+  {"2", "visit-timeline",    ENTRY_VISIT_TIMELINE.c_str(), "<alt>T",
+   ENTRY_VISIT_TIMELINE.c_str(),            G_CALLBACK(activate_action)},
+  {"3", "settings",    ENTRY_MANAGE_ACCOUNTS.c_str(), "<alt>S",
+   ENTRY_MANAGE_ACCOUNTS.c_str(),            G_CALLBACK(activate_action)},
+  {"4", "application-exit", ENTRY_QUIT.c_str(), "<alt>Q",
+   ENTRY_QUIT.c_str(), G_CALLBACK(terminate_prog)},
 };
 static guint n_entries = G_N_ELEMENTS(entries);
 
@@ -60,10 +65,6 @@ static const gchar *ui_info =
   "    <menuitem action='4' />" //exit
   "  </popup>"
   "</ui>";
-
-void terminate_prog(){
-  exit(0);
-}
 
 void update_statusbar(GtkTextBuffer *buffer, GtkStatusbar  *statusbar) {
   gchar *msg;
@@ -104,7 +105,7 @@ static void activate_action(GtkAction *action){
     GtkToolItem *tweet;
     GtkTextBuffer *buffer;
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title (GTK_WINDOW (window), "Tweet away, my boy/girl:");
+    gtk_window_set_title (GTK_WINDOW (window), TWEET_TITLE.c_str());
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
     gtk_window_set_default_size(GTK_WINDOW(window), 350, 300);
     vbox = gtk_vbox_new(FALSE, 0);  //vbox def
@@ -144,7 +145,7 @@ static void activate_action(GtkAction *action){
   }
 }
 
-void addAccount(GtkEntry* pin){
+void addAccount(string account, GtkEntry* pin){
   const char* pin_text = gtk_entry_get_text(pin);
   if(pin_text != NULL){
     std::string myOAuthAccessTokenKey("");
@@ -153,7 +154,7 @@ void addAccount(GtkEntry* pin){
     twitterObj.oAuthAccessToken();
     twitterObj.getOAuth().getOAuthTokenKey(myOAuthAccessTokenKey);
     twitterObj.getOAuth().getOAuthTokenSecret(myOAuthAccessTokenSecret);
-    preferences.addAccount("user", myOAuthAccessTokenKey.c_str(), myOAuthAccessTokenSecret.c_str());
+    preferences.addAccount(account, myOAuthAccessTokenKey.c_str(), myOAuthAccessTokenSecret.c_str());
     
   }
 }
@@ -167,7 +168,11 @@ static void accountAdder(){
   GtkWidget *window;
   GtkWidget *table;
   GtkWidget *pin_label;
-  GtkWidget *pin;
+  GtkWidget *pin_entry;
+  GtkWidget *inst_label;
+  GtkWidget *account_label;
+  GtkWidget *account_entry;
+  GtkWidget *hseparator;
   GtkWidget *toolbar;
   GtkToolItem *auth0;
   GtkWidget *hbox;
@@ -178,36 +183,45 @@ static void accountAdder(){
   GtkWidget *newpinBtn;
   GtkWidget *statusbar;
   
-  window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  window = gtk_window_new(GTK_WINDOW_TOPLEVEL); //sets up main window
   gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
-  gtk_window_set_title(GTK_WINDOW(window), "Add a twitter account");
+  gtk_window_set_title(GTK_WINDOW(window), ACCOUNT_ADDER_TITLE.c_str());
   gtk_window_set_default_size(GTK_WINDOW(window), 300, -1);
-  toolbar = gtk_toolbar_new();  //toolbar def
+  toolbar = gtk_toolbar_new();  
   table = gtk_table_new(3, 2, FALSE);
   vbox = gtk_vbox_new(FALSE, 0);
   hbox = gtk_hbox_new(FALSE, 0);
   gtk_container_add(GTK_CONTAINER(window), vbox);
   halign = gtk_alignment_new(0, 0, 0, 0);
   gtk_container_add(GTK_CONTAINER(halign), hbox);
-  gtk_box_pack_start(GTK_BOX(vbox), halign, TRUE, TRUE, 5); 
-  pin_label = gtk_label_new("PIN#: ");
-  gtk_table_attach(GTK_TABLE(table), pin_label, 0, 1, 0, 1, (GTK_FILL), (GTK_FILL), 5, 5);
-  pin = gtk_entry_new();
+  pin_label = gtk_label_new(ACCOUNT_ADDER_PIN_LABEL.c_str());
+  account_label = gtk_label_new(ACCOUNT_ADDER_ACCT_NAME.c_str());
+  inst_label = gtk_label_new(ACCOUNT_ADDER_INSTRUCS.c_str());
+  gtk_label_set_line_wrap(GTK_LABEL(inst_label), TRUE);
+  hseparator = gtk_hseparator_new();
+  pin_entry = gtk_entry_new();
+  account_entry = gtk_entry_new();
   auth0 = gtk_tool_button_new_from_stock(GTK_STOCK_OK);
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), auth0, -1);
-  signinBtn = gtk_button_new_with_label("Sign in");
+  signinBtn = gtk_button_new_with_label(ACCOUNT_ADDER_SIGN_IN.c_str());
   gtk_widget_set_size_request(signinBtn, 70, 30 );
-  newpinBtn = gtk_button_new_with_label("Request new pin");
+  newpinBtn = gtk_button_new_with_label(ACCOUNT_ADDER_REQ_PIN.c_str());
   gtk_widget_set_size_request(newpinBtn, -1, 30 );
   gtk_box_pack_start(GTK_BOX(hbox), signinBtn, FALSE, FALSE, 5);
   gtk_box_pack_start(GTK_BOX(hbox), newpinBtn, FALSE, FALSE, 0);
   balign = gtk_alignment_new(0, 1, 1, 0);
   statusbar = gtk_statusbar_new();
   gtk_container_add(GTK_CONTAINER(balign), statusbar);
+  gtk_box_pack_start(GTK_BOX(vbox), inst_label, TRUE, TRUE, 5); //add widgets from top-to-bottom
+  gtk_box_pack_start(GTK_BOX(vbox), hseparator, TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(vbox), halign, TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(vbox), table, TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(vbox), balign, FALSE, FALSE, 0);
-  gtk_table_attach(GTK_TABLE(table), pin, 1, 2, 0, 1, (GTK_FILL), (GTK_FILL), 5, 5);
-  g_signal_connect_swapped(G_OBJECT(signinBtn), "clicked", G_CALLBACK(addAccount), GTK_ENTRY(pin));
+  gtk_table_attach(GTK_TABLE(table), account_label, 0, 1, 0, 1, (GTK_FILL), (GTK_FILL), 5, 5);
+  gtk_table_attach(GTK_TABLE(table), account_entry, 1, 2, 0, 1, (GTK_FILL), (GTK_FILL), 5, 5);  
+  gtk_table_attach(GTK_TABLE(table), pin_label, 0, 1, 1, 2, (GTK_FILL), (GTK_FILL), 5, 5);
+  gtk_table_attach(GTK_TABLE(table), pin_entry, 1, 2, 1, 2, (GTK_FILL), (GTK_FILL), 5, 5);  
+  g_signal_connect_swapped(G_OBJECT(signinBtn), "clicked", G_CALLBACK(addAccount), GTK_ENTRY(pin_entry));
   g_signal_connect(G_OBJECT(newpinBtn), "clicked", G_CALLBACK(requestPin), NULL);
   g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(terminate_prog), NULL);
   gtk_widget_show_all(window);
