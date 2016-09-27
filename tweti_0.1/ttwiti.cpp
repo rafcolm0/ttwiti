@@ -29,8 +29,8 @@ AppIndicator* indicator;
 GError* error = NULL;
 settings preferences;
 twitCurl twitterObj;
-//"https://api.twitter.com/oauth/authorize
 std::string AUTH_URL;
+std::string USER_PIN;
 std::string CONSUMER_KEY("L1BkxDo0Uqd6x4B6NS2MTfen8");
 std::string CONSUMER_SECRET("Q6UEjXmsWR8wwlYXxHiAOnoeUrustLtLogE4JscFkKvSjGNlkU");
 
@@ -146,13 +146,16 @@ static void activate_action(GtkAction *action){
 }
 
 void addAccount(GtkEntry* pin){
-  const char* text = gtk_entry_get_text(pin);
-  if(text != NULL){
-    cout << "\n\n\n\PIN:\n\n" +text + "\n\n\n";
-    twitterObj.getOAuth().setOAuthPin(text);
-    twitterObj.getOAuth().setOAuthTokenKey(NULL);
-    twitterObj.getOAuth().setOAuthTokenSecret(NULL);
-    preferences.addAccount(gtk_entry_get_text(pin));
+  const char* pin_text = gtk_entry_get_text(pin);
+  if(pin_text != NULL){
+    std::string myOAuthAccessTokenKey("");
+    std::string myOAuthAccessTokenSecret("");
+    twitterObj.getOAuth().setOAuthPin(pin_text);
+    twitterObj.oAuthAccessToken();
+    twitterObj.getOAuth().getOAuthTokenKey(myOAuthAccessTokenKey);
+    twitterObj.getOAuth().getOAuthTokenSecret(myOAuthAccessTokenSecret);
+    preferences.addAccount("user", myOAuthAccessTokenKey.c_str(), myOAuthAccessTokenSecret.c_str());
+    
   }
 }
 
@@ -215,8 +218,10 @@ int main(int argc, char **argv){
   gtk_init(&argc, &argv);
   twitterObj.getOAuth().setConsumerKey(CONSUMER_KEY);
   twitterObj.getOAuth().setConsumerSecret(CONSUMER_SECRET);
-  if (preferences.numberOfAccounts() == 0){
+  if (preferences.noAccounts()){
     accountAdder();
+  } else {
+    
   }
   /* Menus */
   action_group = gtk_action_group_new("AppActions");
