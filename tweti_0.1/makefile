@@ -4,15 +4,15 @@ CC=g++
 #DEBUG ON
 CFLAGS=-g -Wall -c
 SETTINGS_LIBS=`pkg-config --libs libconfig`
-DEPS= `pkg-config --cflags gtk+-2.0` -I/usr/include/libappindicator-0.1/ `pkg-config --libs gtk+-2.0 libnotify` -L/usr/lib -lappindicator
+DEPS= `pkg-config --cflags gtk+-2.0` -I/usr/include/libappindicator-0.1/ `pkg-config --libs gtk+-2.0 libnotify` -L/usr/lib -lappindicator -ltwitcurl
 
-all: twiti
+all: ttwiti
 
-twiti: twiti.o settings.o account.o
-	$(CC) twiti.o settings.o account.o -o twiti $(DEPS)
+ttwiti: ttwiti.o settings.o account.o
+	$(CC) ttwiti.o settings.o account.o -o ttwiti $(DEPS)
 
-twiti.o: twiti.cpp
-	$(CC) $(CFLAGS) twiti.cpp $(DEPS)
+ttwiti.o: ttwiti.cpp
+	$(CC) $(CFLAGS) ttwiti.cpp $(DEPS)
 
 settings.o: settings.cpp
 	$(CC) $(CFLAGS) settings.cpp
@@ -21,5 +21,5 @@ account.o: account.cpp account.h
 	$(CC) $(CFLAGS) account.cpp account.h
 
 clean:
-	$(RM) twiti twiti.o settings.o
+	$(RM) ttwiti ttwiti.o settings.o account.o 
 

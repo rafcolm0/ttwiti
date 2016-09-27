@@ -4,12 +4,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include "libtwitcurl/twitcurl.h"
 
 using namespace std;
 
 class settings{
-  
 public:
   settings(){
     if(chdir("/home/rc/.config/ttwiti/") != 0){
@@ -23,7 +21,7 @@ public:
     prefs.close();
   }
 
-  void addAccount(const char* pin){
+  void addAccount(const char* pin) {
     
   }
 
@@ -37,4 +35,5 @@ public:
   
 private:
   ofstream prefs;
+  
 };
