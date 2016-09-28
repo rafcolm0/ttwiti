@@ -25,12 +25,8 @@
 
 using namespace std;
 
-struct account_info{
-  string username;
-  string token_key;
-  string token_secret;
-};
-
+GtkWidget* WINDOW_ACCT;
+GtkWidget* WINDOW_TWEET;
 GtkWidget* indicator_menu;
 GtkActionGroup* action_group;
 GtkUIManager*   uim;
@@ -44,7 +40,7 @@ vector<string> accts_info;  //vector for future multiple account support!
 static void activate_action (GtkAction *action);
 
 void terminate_prog(){
-  //delete &accts_info;
+  gtk_main_quit();
   exit(0);
 }
 
@@ -106,19 +102,18 @@ static void activate_action(GtkAction *action){
   GtkWidget *dialog;
   switch (*name){
   case '0':
-    GtkWidget *window;
     GtkWidget *text_view;
     GtkWidget *vbox;
     GtkWidget *toolbar;
     GtkWidget *statusbar;
     GtkToolItem *tweet;
     GtkTextBuffer *buffer;
-    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title (GTK_WINDOW (window), TWEET_TITLE.c_str());
-    gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
-    gtk_window_set_default_size(GTK_WINDOW(window), 350, 300);
+    WINDOW_TWEET = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title (GTK_WINDOW (WINDOW_TWEET), TWEET_TITLE.c_str());
+    gtk_window_set_position(GTK_WINDOW(WINDOW_TWEET), GTK_WIN_POS_CENTER);
+    gtk_window_set_default_size(GTK_WINDOW(WINDOW_TWEET), 350, 300);
     vbox = gtk_vbox_new(FALSE, 0);  //vbox def
-    gtk_container_add(GTK_CONTAINER(window), vbox);
+    gtk_container_add(GTK_CONTAINER(WINDOW_TWEET), vbox);
     /**
      ** TODO FIX statusbar
      **/
@@ -137,8 +132,8 @@ static void activate_action(GtkAction *action){
     g_signal_connect_swapped(G_OBJECT(tweet), "clicked", G_CALLBACK(postTweet), buffer);
     g_signal_connect(buffer, "changed", G_CALLBACK(update_statusbar), statusbar);
     g_signal_connect_object(buffer, "mark_set", G_CALLBACK(mark_set_callback), statusbar, G_CONNECT_AFTER);
-    // g_signal_connect_swapped(G_OBJECT(window), "destroy", G_CALLBACK(gtk_main_quit), NULL);
-    gtk_widget_show_all (window);
+    g_signal_connect_swapped(G_OBJECT(WINDOW_TWEET), "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    gtk_widget_show_all (WINDOW_TWEET);
     break;
   case '1':
     dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE, "You activated action: \"%s\"", name);
@@ -176,7 +171,8 @@ void start_ttwiti(){
 void addAccount(GtkEntry* pin){
   const char* pin_text = gtk_entry_get_text(pin);
   settings* prefs = &preferences;
-  if(!twitterMan.addAccount(pin_text, prefs)){
+  if(twitterMan.addAccount(pin_text, prefs)){
+    gtk_widget_hide(WINDOW_ACCT);
     start_ttwiti();
   }
 }
@@ -186,13 +182,10 @@ void rPin(){
 }
 
 static void accountAdder(){
-  GtkWidget *window;
   GtkWidget *table;
   GtkWidget *pin_label;
   GtkWidget *pin_entry;
   GtkWidget *inst_label;
-  GtkWidget *account_label;
-  GtkWidget *account_entry;
   GtkWidget *hseparator;
   GtkWidget *toolbar;
   GtkToolItem *auth0;
@@ -204,24 +197,22 @@ static void accountAdder(){
   GtkWidget *newpinBtn;
   GtkWidget *statusbar;
   
-  window = gtk_window_new(GTK_WINDOW_TOPLEVEL); //sets up main window
-  gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
-  gtk_window_set_title(GTK_WINDOW(window), ACCOUNT_ADDER_TITLE.c_str());
-  gtk_window_set_default_size(GTK_WINDOW(window), 300, -1);
+  WINDOW_ACCT = gtk_window_new(GTK_WINDOW_TOPLEVEL); //sets up main window
+  gtk_window_set_position(GTK_WINDOW(WINDOW_ACCT), GTK_WIN_POS_CENTER);
+  gtk_window_set_title(GTK_WINDOW(WINDOW_ACCT), ACCOUNT_ADDER_TITLE.c_str());
+  gtk_window_set_default_size(GTK_WINDOW(WINDOW_ACCT), 300, -1);
   toolbar = gtk_toolbar_new();  
   table = gtk_table_new(3, 2, FALSE);
   vbox = gtk_vbox_new(FALSE, 0);
   hbox = gtk_hbox_new(FALSE, 0);
-  gtk_container_add(GTK_CONTAINER(window), vbox);
+  gtk_container_add(GTK_CONTAINER(WINDOW_ACCT), vbox);
   halign = gtk_alignment_new(0, 0, 0, 0);
   gtk_container_add(GTK_CONTAINER(halign), hbox);
   pin_label = gtk_label_new(ACCOUNT_ADDER_PIN_LABEL.c_str());
-  account_label = gtk_label_new(ACCOUNT_ADDER_ACCT_NAME.c_str());
   inst_label = gtk_label_new(ACCOUNT_ADDER_INSTRUCS.c_str());
   gtk_label_set_line_wrap(GTK_LABEL(inst_label), TRUE);
   hseparator = gtk_hseparator_new();
   pin_entry = gtk_entry_new();
-  account_entry = gtk_entry_new();
   auth0 = gtk_tool_button_new_from_stock(GTK_STOCK_OK);
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), auth0, -1);
   signinBtn = gtk_button_new_with_label(ACCOUNT_ADDER_SIGN_IN.c_str());
@@ -238,14 +229,12 @@ static void accountAdder(){
   gtk_box_pack_start(GTK_BOX(vbox), halign, TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(vbox), table, TRUE, TRUE, 5);
   gtk_box_pack_start(GTK_BOX(vbox), balign, FALSE, FALSE, 0);
-  gtk_table_attach(GTK_TABLE(table), account_label, 0, 1, 0, 1, (GTK_FILL), (GTK_FILL), 5, 5);
-  gtk_table_attach(GTK_TABLE(table), account_entry, 1, 2, 0, 1, (GTK_FILL), (GTK_FILL), 5, 5);  
-  gtk_table_attach(GTK_TABLE(table), pin_label, 0, 1, 1, 2, (GTK_FILL), (GTK_FILL), 5, 5);
-  gtk_table_attach(GTK_TABLE(table), pin_entry, 1, 2, 1, 2, (GTK_FILL), (GTK_FILL), 5, 5);  
+  gtk_table_attach(GTK_TABLE(table), pin_label, 0, 1, 0, 1, (GTK_FILL), (GTK_FILL), 5, 5);
+  gtk_table_attach(GTK_TABLE(table), pin_entry, 1, 2, 0, 1, (GTK_FILL), (GTK_FILL), 5, 5);  
   g_signal_connect_swapped(G_OBJECT(signinBtn), "clicked", G_CALLBACK(addAccount), GTK_ENTRY(pin_entry));
   g_signal_connect(G_OBJECT(newpinBtn), "clicked", G_CALLBACK(rPin), NULL);
-  g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(terminate_prog), NULL);
-  gtk_widget_show_all(window);
+  g_signal_connect(G_OBJECT(WINDOW_ACCT), "destroy", G_CALLBACK(terminate_prog), NULL);
+  gtk_widget_show_all(WINDOW_ACCT);
 }
 
 int main(int argc, char **argv){
