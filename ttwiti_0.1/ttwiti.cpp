@@ -49,9 +49,9 @@ static GtkActionEntry entries[] = {
    ENTRY_POST_TWEET.c_str(),    G_CALLBACK(activate_action)},
   {"1", "visit-pofile",    ENTRY_VISIT_PROFILE.c_str(), "<altl>P",
    ENTRY_VISIT_PROFILE.c_str(),          G_CALLBACK(activate_action)},
-  {"3", "settings",    ENTRY_MANAGE_ACCOUNTS.c_str(), "<alt>S",
+  {"2", "settings",    ENTRY_MANAGE_ACCOUNTS.c_str(), "<alt>S",
    ENTRY_MANAGE_ACCOUNTS.c_str(),            G_CALLBACK(activate_action)},
-  {"4", "application-exit", ENTRY_QUIT.c_str(), "<alt>Q",
+  {"3", "application-exit", ENTRY_QUIT.c_str(), "<alt>Q",
    ENTRY_QUIT.c_str(), G_CALLBACK(terminate_prog)},
 };
 static guint n_entries = G_N_ELEMENTS(entries);
@@ -129,7 +129,7 @@ static void activate_action(GtkAction *action){
     gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tweet, -1);
     gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 5);
     text_view = gtk_text_view_new(); //text_view def
-    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text_view), GTK_WRAP_WORD);
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text_view), GTK_WRAP_WORD_CHAR);
     gtk_box_pack_start(GTK_BOX(vbox), text_view, TRUE, TRUE, 0);
     gtk_widget_grab_focus(text_view);
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
