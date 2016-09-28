@@ -87,7 +87,8 @@ void postTweet(GtkTextBuffer* buffer){
   gtk_text_buffer_get_start_iter(buffer, &start_iter);
   gtk_text_buffer_get_end_iter(buffer, &end_iter);
   text = gtk_text_buffer_get_text(buffer, &start_iter, &end_iter, FALSE);
-  if(twitterMan.postTweet(text, accts_info.at(1), accts_info.at(2))){ //temporary
+  //cout << "K: " << accts_info.at(0) << "    T: " << accts_info.at(1) << endl << endl;
+  if(twitterMan.postTweet(text, accts_info.at(0), accts_info.at(1))){ //temporary
     notify_init("ttwiti");
     NotifyNotification* n = notify_notification_new (NOTIF_TWEET_SUCCESS.c_str(), text, 0);
     notify_notification_set_timeout(n, 10000); // 10 seconds
