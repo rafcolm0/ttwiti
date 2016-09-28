@@ -49,8 +49,6 @@ static GtkActionEntry entries[] = {
    ENTRY_POST_TWEET.c_str(),    G_CALLBACK(activate_action)},
   {"1", "visit-pofile",    ENTRY_VISIT_PROFILE.c_str(), "<altl>P",
    ENTRY_VISIT_PROFILE.c_str(),          G_CALLBACK(activate_action)},
-  {"2", "visit-timeline",    ENTRY_VISIT_TIMELINE.c_str(), "<alt>T",
-   ENTRY_VISIT_TIMELINE.c_str(),            G_CALLBACK(activate_action)},
   {"3", "settings",    ENTRY_MANAGE_ACCOUNTS.c_str(), "<alt>S",
    ENTRY_MANAGE_ACCOUNTS.c_str(),            G_CALLBACK(activate_action)},
   {"4", "application-exit", ENTRY_QUIT.c_str(), "<alt>Q",
@@ -63,9 +61,8 @@ static const gchar *ui_info =
   "  <popup name='IndicatorPopup'>"
   "    <menuitem action='0' />" //Post a tweet
   "    <menuitem action='1' />" //Go to profile
-  "    <menuitem action='2' />" //Go to timeline
-  "    <menuitem action='3' />" //settings
-  "    <menuitem action='4' />" //exit
+  "    <menuitem action='2' />" //settings
+  "    <menuitem action='3' />" //exit
   "  </popup>"
   "</ui>";
 
@@ -89,8 +86,16 @@ void postTweet(GtkTextBuffer* buffer){
   text = gtk_text_buffer_get_text(buffer, &start_iter, &end_iter, FALSE);
   //cout << "K: " << accts_info.at(0) << "    T: " << accts_info.at(1) << endl << endl;
   if(twitterMan.postTweet(text, accts_info.at(0), accts_info.at(1))){ //temporary
+    gtk_widget_hide(WINDOW_TWEET);
     notify_init("ttwiti");
     NotifyNotification* n = notify_notification_new (NOTIF_TWEET_SUCCESS.c_str(), text, 0);
+    notify_notification_set_timeout(n, 10000); // 10 seconds
+    if (!notify_notification_show(n, 0)) {
+      std::cerr << "show has failed" << std::endl;
+    }
+  } else {
+    notify_init("ttwiti");
+    NotifyNotification* n = notify_notification_new (NOTIF_TWEET_FAIL.c_str(), NOTIF_TWEET_FAIL_INST.c_str(), 0);
     notify_notification_set_timeout(n, 10000); // 10 seconds
     if (!notify_notification_show(n, 0)) {
       std::cerr << "show has failed" << std::endl;
@@ -133,7 +138,7 @@ static void activate_action(GtkAction *action){
     g_signal_connect_swapped(G_OBJECT(tweet), "clicked", G_CALLBACK(postTweet), buffer);
     g_signal_connect(buffer, "changed", G_CALLBACK(update_statusbar), statusbar);
     g_signal_connect_object(buffer, "mark_set", G_CALLBACK(mark_set_callback), statusbar, G_CONNECT_AFTER);
-    g_signal_connect_swapped(G_OBJECT(WINDOW_TWEET), "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect_swapped(G_OBJECT(WINDOW_TWEET), "destroy", G_CALLBACK(gtk_widget_hide), GTK_WINDOW(WINDOW_TWEET));
     gtk_widget_show_all (WINDOW_TWEET);
     break;
   case '1':
@@ -144,8 +149,6 @@ static void activate_action(GtkAction *action){
   case '2':
     break;
   case '3':
-    break;
-  case '4':
     terminate_prog(); 
   }
 }
