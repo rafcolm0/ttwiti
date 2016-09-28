@@ -1,7 +1,7 @@
 /** author and twitter keys owner: rafcolm_
  ** twitter owner ID	1903897902
  ** consumer key:	L1BkxDo0Uqd6x4B6NS2MTfen8
- ** 
+ ** secret key:         Q6UEjXmsWR8wwlYXxHiAOnoeUrustLtLogE4JscFkKvSjGNlkU
  ** description: Mini twitter client for quicker tweeting and notification access. Features no GUI. Only tweeting.
  ** 
  ** github: https://github.com/rafcolm0/ttwiti
@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <vector>
 #include <libnotify/notify.h>
 #include "settings.h"
 #include "libtwitcurl/twitcurl.h"
@@ -24,21 +25,26 @@
 
 using namespace std;
 
+struct account_info{
+  string username;
+  string token_key;
+  string token_secret;
+};
+
 GtkWidget* indicator_menu;
 GtkActionGroup* action_group;
 GtkUIManager*   uim;
 AppIndicator* indicator;
 GError* error = NULL;
 settings preferences;
-twitCurl twitterObj;
-std::string AUTH_URL;
-std::string USER_PIN;
-std::string CONSUMER_KEY("L1BkxDo0Uqd6x4B6NS2MTfen8");
-std::string CONSUMER_SECRET("Q6UEjXmsWR8wwlYXxHiAOnoeUrustLtLogE4JscFkKvSjGNlkU");
+twitter_man twitterMan;
+vector<string> accts_info;  //vector for future multiple account support!
+
 
 static void activate_action (GtkAction *action);
 
 void terminate_prog(){
+  //delete &accts_info;
   exit(0);
 }
 
@@ -85,11 +91,13 @@ void postTweet(GtkTextBuffer* buffer){
   gtk_text_buffer_get_start_iter(buffer, &start_iter);
   gtk_text_buffer_get_end_iter(buffer, &end_iter);
   text = gtk_text_buffer_get_text(buffer, &start_iter, &end_iter, FALSE);
-  notify_init("ttwiti");
-  NotifyNotification* n = notify_notification_new ("Tweet posted succesfully!", text, 0);
-  notify_notification_set_timeout(n, 10000); // 10 seconds
-  if (!notify_notification_show(n, 0)) {
-    std::cerr << "show has failed" << std::endl;
+  if(twitterMan.postTweet(text, accts_info.at(1), accts_info.at(2))){ //temporary
+    notify_init("ttwiti");
+    NotifyNotification* n = notify_notification_new (NOTIF_TWEET_SUCCESS.c_str(), text, 0);
+    notify_notification_set_timeout(n, 10000); // 10 seconds
+    if (!notify_notification_show(n, 0)) {
+      std::cerr << "show has failed" << std::endl;
+    }
   }
 }
 
@@ -146,23 +154,35 @@ static void activate_action(GtkAction *action){
   }
 }
 
-void addAccount(string account, GtkEntry* pin){
+void start_ttwiti(){
+  /* Menus */
+  action_group = gtk_action_group_new("AppActions");
+  gtk_action_group_add_actions(action_group, entries, n_entries, NULL);
+  uim = gtk_ui_manager_new();
+  gtk_ui_manager_insert_action_group(uim, action_group, 0);
+  if (!gtk_ui_manager_add_ui_from_string(uim, ui_info, -1, &error)) {
+    g_message("Failed to build menus: %s\n", error->message);
+    g_error_free(error);
+    error = NULL;
+  }
+  /* Indicator */
+  indicator = app_indicator_new("example-simple-client", "go-jump", APP_INDICATOR_CATEGORY_APPLICATION_STATUS);
+  indicator_menu = gtk_ui_manager_get_widget(uim, "/ui/IndicatorPopup");
+  app_indicator_set_status(indicator, APP_INDICATOR_STATUS_ACTIVE);
+  app_indicator_set_attention_icon(indicator, "indicator-messages-new");
+  app_indicator_set_menu(indicator, GTK_MENU(indicator_menu));
+}
+
+void addAccount(GtkEntry* pin){
   const char* pin_text = gtk_entry_get_text(pin);
-  if(pin_text != NULL){
-    std::string myOAuthAccessTokenKey("");
-    std::string myOAuthAccessTokenSecret("");
-    twitterObj.getOAuth().setOAuthPin(pin_text);
-    twitterObj.oAuthAccessToken();
-    twitterObj.getOAuth().getOAuthTokenKey(myOAuthAccessTokenKey);
-    twitterObj.getOAuth().getOAuthTokenSecret(myOAuthAccessTokenSecret);
-    preferences.addAccount(account, myOAuthAccessTokenKey.c_str(), myOAuthAccessTokenSecret.c_str());
-    
+  settings* prefs = &preferences;
+  if(!twitterMan.addAccount(pin_text, prefs)){
+    start_ttwiti();
   }
 }
 
-void requestPin(){
-  twitterObj.oAuthRequestToken(AUTH_URL);
-  system(("xdg-open " + AUTH_URL).c_str());
+void rPin(){
+  twitterMan.requestPIN();
 }
 
 static void accountAdder(){
@@ -223,43 +243,20 @@ static void accountAdder(){
   gtk_table_attach(GTK_TABLE(table), pin_label, 0, 1, 1, 2, (GTK_FILL), (GTK_FILL), 5, 5);
   gtk_table_attach(GTK_TABLE(table), pin_entry, 1, 2, 1, 2, (GTK_FILL), (GTK_FILL), 5, 5);  
   g_signal_connect_swapped(G_OBJECT(signinBtn), "clicked", G_CALLBACK(addAccount), GTK_ENTRY(pin_entry));
-  g_signal_connect(G_OBJECT(newpinBtn), "clicked", G_CALLBACK(requestPin), NULL);
+  g_signal_connect(G_OBJECT(newpinBtn), "clicked", G_CALLBACK(rPin), NULL);
   g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(terminate_prog), NULL);
   gtk_widget_show_all(window);
 }
 
 int main(int argc, char **argv){
   gtk_init(&argc, &argv);
-  twitterObj.getOAuth().setConsumerKey(CONSUMER_KEY);
-  twitterObj.getOAuth().setConsumerSecret(CONSUMER_SECRET);
-  if (preferences.noAccounts()){
+  accts_info = preferences.getInfoVector(); //CAN BE IMPROVED
+  if (accts_info.size() == 0){
     accountAdder();
+    accts_info = preferences.getInfoVector();
   } else {
-    
+    start_ttwiti();
   }
-  /* Menus */
-  action_group = gtk_action_group_new("AppActions");
-  gtk_action_group_add_actions(action_group, entries, n_entries, NULL);
-  uim = gtk_ui_manager_new();
-  gtk_ui_manager_insert_action_group(uim, action_group, 0);
-
-  if (!gtk_ui_manager_add_ui_from_string(uim, ui_info, -1, &error)) {
-    g_message("Failed to build menus: %s\n", error->message);
-    g_error_free(error);
-    error = NULL;
-  }
-
-  /* Indicator */
-  indicator = app_indicator_new("example-simple-client", "go-jump", APP_INDICATOR_CATEGORY_APPLICATION_STATUS);
-
-  indicator_menu = gtk_ui_manager_get_widget(uim, "/ui/IndicatorPopup");
-
-  app_indicator_set_status(indicator, APP_INDICATOR_STATUS_ACTIVE);
-  app_indicator_set_attention_icon(indicator, "indicator-messages-new");
-
-  app_indicator_set_menu(indicator, GTK_MENU(indicator_menu));
-
   gtk_main();
-
   return 0;
 }
