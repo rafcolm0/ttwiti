@@ -1,7 +1,6 @@
 /** author and twitter keys owner: rafcolm_
  ** twitter owner ID	1903897902
  ** consumer key:	L1BkxDo0Uqd6x4B6NS2MTfen8
- ** secret key:         Q6UEjXmsWR8wwlYXxHiAOnoeUrustLtLogE4JscFkKvSjGNlkU
  ** description: Mini twitter client for quicker tweeting and notification access. Features no GUI. Only tweeting.
  ** 
  ** github: https://github.com/rafcolm0/ttwiti
@@ -73,8 +72,12 @@ void update_statusbar(GtkTextBuffer *buffer, GtkStatusbar  *statusbar) {
   gtk_text_buffer_get_start_iter(buffer, &start_iter);
   gtk_text_buffer_get_end_iter(buffer, &end_iter);
   int size= strlen(gtk_text_buffer_get_text(buffer, &start_iter, &end_iter, FALSE));
-  gtk_statusbar_pop(GTK_STATUSBAR(statusbar), 0); 
-  msg = g_strdup_printf("Size: %d", size);
+  gtk_statusbar_pop(GTK_STATUSBAR(statusbar), 0);
+  if (size < 139){
+    msg = g_strdup_printf("Size: %d", size);
+  } else {
+    msg = g_strdup_printf("Size: %d -- INVALID: Max. size is 140!", size);
+  }
   gtk_statusbar_push(GTK_STATUSBAR(statusbar), 0, msg);
   g_free(msg);
 }
@@ -89,21 +92,22 @@ void postTweet(GtkTextBuffer* buffer){
   gtk_text_buffer_get_start_iter(buffer, &start_iter);
   gtk_text_buffer_get_end_iter(buffer, &end_iter);
   text = gtk_text_buffer_get_text(buffer, &start_iter, &end_iter, FALSE);
-  //cout << "K: " << accts_info.at(0) << "    T: " << accts_info.at(1) << endl << endl;
-  if(twitterMan.postTweet(text, accts_info.at(0), accts_info.at(1))){ //temporary
-    gtk_widget_hide(WINDOW_TWEET);
-    notify_init("ttwiti");
-    NotifyNotification* n = notify_notification_new (NOTIF_TWEET_SUCCESS.c_str(), text, 0);
-    notify_notification_set_timeout(n, 10000); // 10 seconds
-    if (!notify_notification_show(n, 0)) {
-      std::cerr << "show has failed" << std::endl;
-    }
-  } else {
-    notify_init("ttwiti");
-    NotifyNotification* n = notify_notification_new (NOTIF_TWEET_FAIL.c_str(), NOTIF_TWEET_FAIL_INST.c_str(), 0);
-    notify_notification_set_timeout(n, 10000); // 10 seconds
-    if (!notify_notification_show(n, 0)) {
-      std::cerr << "show has failed" << std::endl;
+  if(strlen(text) > 0 && strlen(text) < 140){
+    if(twitterMan.postTweet(text, accts_info.at(0), accts_info.at(1))){ //temporary
+      gtk_widget_hide(WINDOW_TWEET);
+      notify_init("ttwiti");
+      NotifyNotification* n = notify_notification_new (NOTIF_TWEET_SUCCESS.c_str(), text, 0);
+      notify_notification_set_timeout(n, 10000); // 10 seconds
+      if (!notify_notification_show(n, 0)) {
+	std::cerr << "show has failed" << std::endl;
+      }
+    } else {
+      notify_init("ttwiti");
+      NotifyNotification* n = notify_notification_new (NOTIF_TWEET_FAIL.c_str(), NOTIF_TWEET_FAIL_INST.c_str(), 0);
+      notify_notification_set_timeout(n, 10000); // 10 seconds
+      if (!notify_notification_show(n, 0)) {
+	std::cerr << "show has failed" << std::endl;
+      }
     }
   }
 }
@@ -142,6 +146,7 @@ static void activate_action(GtkAction *action){
     gtk_widget_show_all (WINDOW_TWEET);
     break;
   case '1':
+    
     break;
   case '2':
     break;

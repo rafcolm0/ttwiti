@@ -12,7 +12,6 @@ using namespace std;
 settings::settings(){
   string home = getenv("HOME");
   if(chdir((home + "/.config/ttwiti").c_str()) != 0){
-    cout << "HOME:  " << (home + "/.config/ttwiti").c_str() << endl << endl << endl;
     system(("mkdir " + home + "/.config/ttwiti").c_str());
     chdir((home + "/.config/ttwiti").c_str());
   }

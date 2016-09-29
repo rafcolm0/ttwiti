@@ -39,11 +39,11 @@ bool twitter_man::postTweet(string text, string key, string secret){
   string replyMsg = "";
   if(twitterObj.statusUpdate(text)){
     twitterObj.getLastWebResponse( replyMsg );
-    cout << "\ntwitCurl::statusUpdate web response:\n" << replyMsg.c_str() << endl ;
+    //cout << "\ntwitCurl::statusUpdate web response:\n" << replyMsg.c_str() << endl ;
     return true;
   }
   twitterObj.getLastCurlError( replyMsg );
-  cout << "\ntwitCurl::statusUpdate web response:\n" << replyMsg.c_str() << endl ;
+  //cout << "\ntwitCurl::statusUpdate web response:\n" << replyMsg.c_str() << endl ;
   return false;
 }
 
