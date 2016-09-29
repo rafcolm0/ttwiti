@@ -27,6 +27,7 @@ using namespace std;
 
 GtkWidget* WINDOW_ACCT;
 GtkWidget* WINDOW_TWEET;
+GtkWidget* statusbar_tweet;
 GtkWidget* indicator_menu;
 GtkActionGroup* action_group;
 GtkUIManager*   uim;
@@ -68,14 +69,18 @@ static const gchar *ui_info =
 
 void update_statusbar(GtkTextBuffer *buffer, GtkStatusbar  *statusbar) {
   gchar *msg;
-  gtk_statusbar_pop(statusbar, 0); 
-  msg = g_strdup_printf("Size: %ld", sizeof(buffer)/sizeof(char));
-  gtk_statusbar_push(statusbar, 0, msg);
+  GtkTextIter start_iter, end_iter;
+  gtk_text_buffer_get_start_iter(buffer, &start_iter);
+  gtk_text_buffer_get_end_iter(buffer, &end_iter);
+  int size= strlen(gtk_text_buffer_get_text(buffer, &start_iter, &end_iter, FALSE));
+  gtk_statusbar_pop(GTK_STATUSBAR(statusbar), 0); 
+  msg = g_strdup_printf("Size: %d", size);
+  gtk_statusbar_push(GTK_STATUSBAR(statusbar), 0, msg);
   g_free(msg);
 }
 
-void mark_set_callback(GtkTextBuffer *buffer, const GtkTextIter *new_location, GtkTextMark *mark, gpointer data) {
-  update_statusbar(buffer, GTK_STATUSBAR(data));
+void mark_set_callback(GtkTextBuffer *buffer) {
+  update_statusbar(buffer, GTK_STATUSBAR(statusbar_tweet));
 }
 
 void postTweet(GtkTextBuffer* buffer){
@@ -105,13 +110,11 @@ void postTweet(GtkTextBuffer* buffer){
 
 static void activate_action(GtkAction *action){
   const gchar *name = gtk_action_get_name (action);
-  GtkWidget *dialog;
   switch (*name){
   case '0':
     GtkWidget *text_view;
     GtkWidget *vbox;
     GtkWidget *toolbar;
-    GtkWidget *statusbar;
     GtkToolItem *tweet;
     GtkTextBuffer *buffer;
     WINDOW_TWEET = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -120,9 +123,6 @@ static void activate_action(GtkAction *action){
     gtk_window_set_default_size(GTK_WINDOW(WINDOW_TWEET), 350, 300);
     vbox = gtk_vbox_new(FALSE, 0);  //vbox def
     gtk_container_add(GTK_CONTAINER(WINDOW_TWEET), vbox);
-    /**
-     ** TODO FIX statusbar
-     **/
     toolbar = gtk_toolbar_new();  //toolbar def
     gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
     tweet = gtk_tool_button_new_from_stock(GTK_STOCK_OK);
@@ -133,18 +133,15 @@ static void activate_action(GtkAction *action){
     gtk_box_pack_start(GTK_BOX(vbox), text_view, TRUE, TRUE, 0);
     gtk_widget_grab_focus(text_view);
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
-    statusbar = gtk_statusbar_new();
-    gtk_box_pack_start(GTK_BOX(vbox), statusbar, FALSE, FALSE, 0);
+    statusbar_tweet = gtk_statusbar_new();
+    gtk_box_pack_start(GTK_BOX(vbox), statusbar_tweet, FALSE, FALSE, 0);
     g_signal_connect_swapped(G_OBJECT(tweet), "clicked", G_CALLBACK(postTweet), buffer);
-    g_signal_connect(buffer, "changed", G_CALLBACK(update_statusbar), statusbar);
-    g_signal_connect_object(buffer, "mark_set", G_CALLBACK(mark_set_callback), statusbar, G_CONNECT_AFTER);
+    g_signal_connect(buffer, "changed", G_CALLBACK(update_statusbar), GTK_STATUSBAR(statusbar_tweet));
+    g_signal_connect_object(buffer, "mark_set", G_CALLBACK(mark_set_callback), GTK_STATUSBAR(statusbar_tweet), G_CONNECT_AFTER);
     g_signal_connect_swapped(G_OBJECT(WINDOW_TWEET), "destroy", G_CALLBACK(gtk_widget_hide), GTK_WINDOW(WINDOW_TWEET));
     gtk_widget_show_all (WINDOW_TWEET);
     break;
   case '1':
-    dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE, "You activated action: \"%s\"", name);
-    g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy), NULL);
-    gtk_widget_show(dialog);
     break;
   case '2':
     break;
