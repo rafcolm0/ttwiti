@@ -112,6 +112,10 @@ void postTweet(GtkTextBuffer* buffer){
   }
 }
 
+void visit_profile(){
+  twitterMan.visitProfile();
+}
+
 static void activate_action(GtkAction *action){
   const gchar *name = gtk_action_get_name (action);
   switch (*name){
@@ -145,12 +149,12 @@ static void activate_action(GtkAction *action){
     g_signal_connect_swapped(G_OBJECT(WINDOW_TWEET), "destroy", G_CALLBACK(gtk_widget_hide), GTK_WINDOW(WINDOW_TWEET));
     gtk_widget_show_all (WINDOW_TWEET);
     break;
-  case '1':
-    
+  case '1': //go to profile
+    visit_profile();
     break;
-  case '2':
+  case '2':  //settings tab: TODO
     break;
-  case '3':
+  case '3':  //exit
     terminate_prog(); 
   }
 }

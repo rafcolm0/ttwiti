@@ -12,6 +12,7 @@ class twitter_man{
   bool addAccount(string pin_text, settings* sets);
   void requestPIN();
   bool postTweet(string text, string key, string secret);
+  void visitProfile();
 
 
  private:

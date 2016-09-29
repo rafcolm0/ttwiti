@@ -47,3 +47,16 @@ bool twitter_man::postTweet(string text, string key, string secret){
   return false;
 }
 
+void twitter_man::visitProfile(){  //NOT WORKING!
+  string link = "";
+  string replyMsg = "";
+  if(twitterObj.timelinePublicGet()){
+      cout << "OK LINK: " << link << endl;
+      twitterObj.getLastWebResponse( replyMsg );
+      cout << "OK M: " << replyMsg << endl;
+  } else {
+    twitterObj.getLastCurlError( replyMsg );
+    cout << "FAIL M: " << replyMsg << endl;
+  }  
+}
+
