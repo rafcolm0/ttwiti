@@ -22,5 +22,5 @@ twitter_man.o: twitter_man.cpp twitter_man.h
 	$(CC) $(CFLAGS) twitter_man.cpp twitter_man.h $(DEPS_twitter_man)
 
 clean:
-	$(RM) ttwiti ttwiti.o settings.o twitter_man.o 
+	$(RM) ttwiti *.o *.gch
 
