@@ -5,6 +5,7 @@
 #include <cstring>
 #include <iostream>
 #include <vector>
+#include <sqlite3.h>
 #include "settings.h"
 
 using namespace std;
@@ -18,6 +19,9 @@ settings::settings(){
   ofstream prefs;
   prefs.open("accounts", ios::out | ios::in | ios::app);
   prefs.close();
+
+  //USING SQL
+  sqlite3 *db;
 }
 
 void settings::addAccount(string  username, string token_key, string token_secret){

@@ -8,5 +8,6 @@ ttwiti has only been tested in Ubuntu.
 Libraries & dependencies:
 ** twitcurl - Twitter API published by swatkat. Already included in this repo. URL: https://github.com/swatkat/twitcurl
 ** libappindicator - indicator panel library
-** libgtk2 - Gtk+2.0 dev package
-** libnotify - notifications library.
+** libgtk2 - Gtk+2.0 development package
+** libnotify - notifications development library.
+** sqlite3-dev - development package for sqlite3
