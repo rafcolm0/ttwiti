@@ -5,7 +5,6 @@
 #include <cstring>
 #include <iostream>
 #include <vector>
-#include <sqlite3.h>
 #include "settings.h"
 
 using namespace std;
@@ -19,15 +18,12 @@ settings::settings(){
   ofstream prefs;
   prefs.open("accounts", ios::out | ios::in | ios::app);
   prefs.close();
-
-  //USING SQL
-  sqlite3 *db;
 }
 
 void settings::addAccount(string  username, string token_key, string token_secret){
   ofstream prefs;
   prefs.open("accounts", ios::out | ios::in | ios::app);
-  prefs << username << endl << token_key << endl << token_secret << endl;
+  prefs << username << " " << token_key << " " << token_secret << endl;
   prefs.close();
 }
 
@@ -44,12 +40,13 @@ vector<string> settings::getInfoVector(){
   vector<string> v;
   ifstream prefs;
   prefs.open("accounts");
-  std::string line;
-  while(std::getline(prefs, line)){
-    std::getline(prefs, line); //key
-    v.push_back(line);
-    std::getline(prefs, line); //secret
-    v.push_back(line);
+  string word;
+  while(prefs >> word){
+    v.push_back(word);//username
+    prefs >> word;
+    v.push_back(word);
+    prefs >> word;
+    v.push_back(word);
   }
   return v; 
 }

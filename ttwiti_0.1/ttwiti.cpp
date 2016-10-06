@@ -5,7 +5,6 @@
  ** 
  ** github: https://github.com/rafcolm0/ttwiti
  ** email: rafael.colon5@gmail.com
- ** linkedin: https://www.linkedin.com/in/rafaeljcolon
  ** External libraries used:
  **   -twitcurl (twitter API): https://github.com/swatkat/twitcurl 
  **/
@@ -73,7 +72,7 @@ void update_statusbar(GtkTextBuffer *buffer, GtkStatusbar  *statusbar) {
   gtk_text_buffer_get_end_iter(buffer, &end_iter);
   int size= strlen(gtk_text_buffer_get_text(buffer, &start_iter, &end_iter, FALSE));
   gtk_statusbar_pop(GTK_STATUSBAR(statusbar), 0);
-  if (size < 139){
+  if (size < 140){
     msg = g_strdup_printf("Size: %d", size);
   } else {
     msg = g_strdup_printf("Size: %d -- INVALID: Max. size is 140!", size);
